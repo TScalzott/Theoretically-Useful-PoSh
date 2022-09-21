@@ -6,6 +6,78 @@ Various PowerShell functions that I like to throw into $profile
 
 $Moniker = "IT"  # prefix alias descriptions with this moniker, allowing show-aliases and similar
 
+function Get-Drives-func {
+    [cmdletbinding()] param (
+        [string] $computerName = "." )
+
+    Process {
+        $Drives = Get-CimInstance -Class Win32_LogicalDisk -Filter "DriveType = '3'" -ComputerName $computerName
+
+        $Drives | Select-Object DeviceID, VolumeName,
+            @{name = 'Size'; Expression={ [math]::round($_.Size / 1GB, 2)} },
+            @{name = 'Free'; Expression = { [math]::round($_.FreeSpace / 1GB, 2)}} |
+            Format-Table -AutoSize
+    }
+}
+Set-Alias -Name Get-Drives -Value Get-Drives-func -Description "$($Moniker): Get system drives, size, freespace"
+
+function Tail-func {
+    # Make a tail equivalent to watch a file
+    [cmdletbinding()] param (
+        [Alias('File')][string] $TextFile )
+    Process {
+        Get-Content -tail 10 -wait -Encoding Unicode $TextFile
+    }
+}
+Set-Alias -Name tail -Value Tail-func -Description "$($Moniker): Tail the contents of a file"
+
+function Get-UTC-func {
+    param (
+        [string] $datetime = (Get-Date).ToString()
+    )
+    (Get-Date($datetime)).ToUniversalTime().ToString("o")
+}
+Set-Alias -Name Get-UTC -Value Get-UTC-func -Description "$($Moniker): Convert current or supplied datetime to UTC"
+
+function Find-NameNumber-func {
+    [cmdletbinding()] param (
+        [string] $number )
+    Process {
+        $filter = "telephoneNumber -like ""*$($number)*"" -or mobile -like ""*$($number)*"""
+        Get-ADUser -filter $filter -Properties Name, TelephoneNumber, Mobile, OtherTelephone, PhysicalDeliveryOfficeName |
+            Select-Object Name, TelephoneNumber, Mobile, OtherTelephone, PhysicalDeliveryOfficeName |
+            Format-Table -Autosize
+    }
+}
+Set-Alias -Name Find-NameNumber -Value Find-NameNumber-func -Description "$($Moniker): Find name by number"
+
+function Find-Number-func {
+    [cmdletbinding()] param (
+        [string] $name )
+    Process {
+        $filter = "name -like ""*$($name)*"" -and (mobile -like ""*"" -or telephoneNumber -like ""*"")"
+        Get-ADUser -filter $filter -Properties Name, TelephoneNumber, Mobile, OtherTelephone, mail, PhysicalDeliveryOfficeName |
+            Select-Object Name, TelephoneNumber, Mobile, OtherTelephone, Mail, PhysicalDeliveryOfficeName |
+            Format-Table -Autosize
+    }
+}
+Set-Alias -Name Find-Number -Value Find-Number-func -Description "$($Moniker): Find number by name"
+
+function VM-Console-func {
+    [cmdletbinding()] param (
+        [string] $VMname )
+    Process {
+        try {
+            vCenter
+            Get-VM $VMname -ErrorAction Stop |
+                Open-VMConsoleWindow -ErrorAction Stop
+        }
+        catch { Write-Output "Failed" }
+    }
+}
+Set-Alias -Name VM-Console -Value VM-Console-func -Description "$($Moniker): Connect to a named VM's console window"
+
+
 function list-proc-func {
     # Make a remote process list and pipe that into
     # a grid view, where selected processes can be terminated
@@ -42,46 +114,18 @@ function Top-Dir-func {
 }
 Set-Alias -Name Top-Dir -Value Top-Dir-func -Description "$($Moniker): Top x directory sorted by last modified"
 
-function Get-Uptime-func {
-    # Get computer uptime, build info, and last updates
+function Get-LAPS-func {
     [cmdletbinding()] param (
-        [string]$computerName = '.' )
+        [string] $computerName = "." )
     Process {
-        $Versions = @{
-            "10586" = "November version: 1507";
-            "14393" = "Anniversary: 1607";
-            "15063" = "Creators: 1703";
-            "16299" = "Fall Creators: 1709";
-            "17134" = "April 2018: 1809";
-            "17763" = "October 2018: 1809";
-            "18362" = "May 2019: 1903";
-            "18363" = "November 2019: 1909"
-        }
-
-        if (($computerName -eq ".") -or (Test-Connection $computerName -Count 2 -Quiet)) {
-            Write-Output "Getting uptime for $($computerName)"
-            Get-WmiObject Win32_OperatingSystem -ComputerName $computerName |
-                Select-Object @{n = 'System'; e = { $_.csname } },
-                @{n = 'Last Boot'; e = { $_.ConverttoDateTime($_.LastBootupTime) } },
-                Caption,
-                BuildNumber,
-                @{n = 'Version'; e = { $Versions[[string]$_.BuildNumber] } },
-                OSArchitecture,
-                @{n = 'RAM(GB)'; e = { [math]::round($_.TotalVisibleMemorySize / 1MB) } }
-            Try {
-                Write-Output "`nLast update installed:"
-                Get-HotFix -ComputerName $computerName -ErrorAction SilentlyContinue |
-                    Sort-Object InstalledOn -Descending -ErrorAction SilentlyContinue |
-                    Select-Object HotFixID, Description, InstalledOn -First 1
-            }
-            catch { }
-        }
-        else {
-            Write-Output "$($computerName) is offline."
-        }
+        Get-ADComputer $computerName -Properties Name, ms-Mcs-AdmPwd, OperatingSystem, distinguishedName |
+            Select-Object @{Label = "Name"; Expression = { $_.name } },
+                @{Label = "Password"; Expression = { $_.'ms-Mcs-AdmPwd' } },
+                @{Label = "OS"; Expression = { $_.operatingsystem } },
+                @{Label = "Distinguished name"; Expression = { $_.'distinguishedname' } }
     }
 }
-Set-Alias -Name Get-Uptime -Value Get-Uptime-func -Description "$($Moniker): Get uptime of local or remote system"
+Set-Alias -Name Get-LAPS -Value Get-LAPS-func -Description "$($Moniker): Get LAPS password of local or remote system"
 
 function show-aliases-func {
     # Remind us of our aliases
@@ -92,3 +136,5 @@ function show-aliases-func {
         Sort-Object Name
 }
 Set-Alias -Name Show-Aliases -Value show-aliases-func -Description "$($Moniker): Show my aliases"
+
+Show-Aliases
