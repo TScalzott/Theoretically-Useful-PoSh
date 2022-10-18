@@ -29,6 +29,9 @@ Various bits of PowerShell that may be handy to others.
     - Remove-StaleProfiles.ps1
       Based on last-used date, remove stale user profiles from the local or a remote system.
 
+    - Find-Process.ps1
+      For all online endpoints in a domain or domains, audit for a currently running process. 
+
 
 ## profile
     - functions.ps1
