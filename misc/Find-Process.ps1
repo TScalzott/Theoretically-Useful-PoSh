@@ -18,6 +18,10 @@ Name of process to be found. Can include wildcards.
 .EXAMPLE
     Find-S1 -Domains @("contoso.com","fabrikam.com") -Process *Agent*
 
+
+Requires Invoke-Ping on the path. Get it at https://gallery.technet.microsoft.com/scriptcenter/Invoke-Ping-Test-in-b553242a
+Also requires PoshRSJob https://github.com/proxb/PoshRSJob
+
 #>
 param
 (
@@ -25,10 +29,6 @@ param
     [Parameter(Mandatory = $True, ParameterSetName = 'ScanDomain')][string[]]$Process
 )
 
-# For speed, use Invoke-Ping from https://gallery.technet.microsoft.com/scriptcenter/Invoke-Ping-Test-in-b553242a
-#
-# Also use PoshRSJob https://github.com/proxb/PoshRSJob
-#
 
 #Requires -Module PoshRSJob
 Import-Module PoshRSJob

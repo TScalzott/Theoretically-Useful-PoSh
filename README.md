@@ -15,6 +15,12 @@ Various bits of PowerShell that may be handy to others.
       Flag users who are disabled in AD, but still have M365 licenses.
 
 ## Misc
+    - Find-Process.ps1
+      For all online endpoints in a domain or domains, audit for a currently running process. 
+
+    - Find-Service.ps1
+      Find installed services by checking all online endpoints from Active Directory
+
     - Ping-http.ps1
       For all entries in a hosts.txt file, repeatedly "ping" each site via https, recording some stats to the screen and 
       a logfile:
@@ -28,9 +34,6 @@ Various bits of PowerShell that may be handy to others.
 
     - Remove-StaleProfiles.ps1
       Based on last-used date, remove stale user profiles from the local or a remote system.
-
-    - Find-Process.ps1
-      For all online endpoints in a domain or domains, audit for a currently running process. 
 
 
 ## profile
