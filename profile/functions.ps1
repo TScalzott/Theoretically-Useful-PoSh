@@ -137,4 +137,44 @@ function show-aliases-func {
 }
 Set-Alias -Name Show-Aliases -Value show-aliases-func -Description "$($Moniker): Show my aliases"
 
+function clean-temp-func {
+    [cmdletbinding()] param (
+        [Parameter(Mandatory = $True)][String]$ComputerName = "",
+        $Days = 14)
+
+    $Go = $false
+    $TempFolder = "\\$($ComputerName)\admin$\temp"
+
+    Write-Host "Remove files and folders older than $($Days) days from $($TempFolder)? (Default:No)" -ForegroundColor Yellow
+    $Readhost = Read-Host "( y / n ): "
+    Switch ($ReadHost) {
+        Y { $Go = $true }
+        N { $Go = $false }
+        Default { $Go = $false }
+    }
+
+    if ($Go) {
+        Write-Host "Removing old files and folders..." -ForegroundColor Yellow
+        try {
+            $f = Get-ChildItem -Path $TempFolder -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-$Days) }
+            Write-Host "   Removing $($f.count) files..." -ForegroundColor Yellow
+            $f | Remove-Item -Verbose -ErrorAction SilentlyContinue
+
+            $f = Get-ChildItem -Path $TempFolder -Directory -ErrorAction SilentlyContinue |
+                Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-$Days) }
+            Write-Host "   Removing $($f.count) folders..." -ForegroundColor Yellow
+            $f | Remove-Item -Recurse -Verbose -ErrorAction SilentlyContinue
+        }
+        catch { }
+        Write-Host "Done" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "Doing nothing" -ForegroundColor Yellow
+    }
+}
+Set-Alias -Name Clean-Temp -Value clean-temp-func -Description "$($Moniker): Clean files and folders older than x days from TEMP"
+
+
+
 Show-Aliases
