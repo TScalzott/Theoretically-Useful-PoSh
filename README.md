@@ -15,12 +15,19 @@ Various bits of PowerShell that may be handy to others.
       Flag users who are disabled in AD, but still have M365 licenses.
 
 ## Misc
+    - Add-RSAT.ps1
+      Install all missing Remote Server Administration Tools.
+
     - Find-Process.ps1
       For all online endpoints in a domain or domains, audit for a currently running process. 
 
     - Find-Service.ps1
       Find installed services by checking all online endpoints from Active Directory
 
+    - Load-UserHives.ps1
+      Load/unload all discovered user registry hives on the local system.
+      Useful for complete AV scanning, etc.
+      
     - Ping-http.ps1
       For all entries in a hosts.txt file, repeatedly "ping" each site via https, recording some stats to the screen and 
       a logfile:
