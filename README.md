@@ -42,6 +42,12 @@ Various bits of PowerShell that may be handy to others.
     - Remove-StaleProfiles.ps1
       Based on last-used date, remove stale user profiles from the local or a remote system.
 
+    - Watch-Presence.ps1
+      Watch for MS Teams Presence information and relay that to Home Assistant via a webhook. 
+
+      This enables automations such as changing the color of a WLED-driven light to let your family know if you are in a meeting.
+
+      The MS Teams log is monitored here, making this suitable for environments where the MS Graph API is restricted.
 
 ## profile
     - functions.ps1
